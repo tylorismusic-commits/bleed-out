@@ -16,6 +16,10 @@
 
 namespace bleed {
 
+inline float flushDenormal(float x) noexcept {
+  return (x > -1e-15f && x < 1e-15f) ? 0.0f : x;
+}
+
 // The Nolly/Silencer idea: gate/expand the high band from the drum body, not
 // from the cymbal wash.  The low/mid detector opens the high-band gate; the
 // DeBleed control sets how much the high band is attenuated when the body is
@@ -159,7 +163,8 @@ public:
           std::max(std::fabs(dm), std::fabs(drm)),
           std::max(std::fabs(dh), std::fabs(drh))};
       for (int b = 0; b < 3; ++b) {
-        bandFast_[b] = std::max(bandPeak[b], bandFast_[b] * fastRelease_);
+        bandFast_[b] =
+            flushDenormal(std::max(bandPeak[b], bandFast_[b] * fastRelease_));
       }
       const float det = weights_[0] * bandFast_[0] +
                         weights_[1] * bandFast_[1] +
@@ -172,6 +177,7 @@ public:
            weights_[2] * bandFast_[2] * 0.25f) /
           std::max(0.001f, weights_[0] + weights_[1] + weights_[2] * 0.25f);
       envDet_ += (det - envDet_) * (1.0f - detRelease_);
+      envDet_ = flushDenormal(envDet_);
       const float transient = std::max(0.0f, det - envDet_);
 
       // Main gate.
@@ -185,6 +191,7 @@ public:
       const bool target = controls_.gateOn && (gateOpen_ || hold_ > 0);
       gateEnv_ += (target ? (1.0f - gateEnv_) : (0.0f - gateEnv_)) *
                   (target ? attackCoef_ : releaseCoef_);
+      gateEnv_ = flushDenormal(gateEnv_);
 
       // De-bleed sidechain.  It is one-shot, not a level gate: each drum hit
       // opens the high band for the attack, then the band closes again even
@@ -209,6 +216,7 @@ public:
       const bool bodyTarget = controls_.gateOn && (bodyHold_ > 0);
       bodyEnv_ += (bodyTarget ? (1.0f - bodyEnv_) : (0.0f - bodyEnv_)) *
                   (bodyTarget ? hbAttackCoef_ : hbReleaseCoef_);
+      bodyEnv_ = flushDenormal(bodyEnv_);
 
       // Ghost note mode.
       bool ghostOpen = false;
@@ -232,9 +240,13 @@ public:
                                 midiGhostHold_ > 0);
       ghostEnv_ += (ghostTarget ? (1.0f - ghostEnv_) : (0.0f - ghostEnv_)) *
                    (ghostTarget ? ghostAttack_ : ghostRelease_);
+      ghostEnv_ = flushDenormal(ghostEnv_);
       const float ghostGain =
           minGain_ + (1.0f - minGain_) * ghostEnv_ * ghostAmount_;
-      float gateGain = minGain_ + (1.0f - minGain_) * gateEnv_;
+      // Gate On = off is a true bypass of the gate, not a closed gate.
+      float gateGain = controls_.gateOn
+                           ? minGain_ + (1.0f - minGain_) * gateEnv_
+                           : 1.0f;
       gateGain = std::max(gateGain, ghostGain);
       float bodyGate = minGain_ + (1.0f - minGain_) * bodyEnv_;
       bodyGate = std::max(bodyGate, ghostGain);
@@ -291,7 +303,7 @@ public:
     meters.outPeakDb = std::max(meters.outPeakLDb, meters.outPeakRDb);
     meters.grDb = std::max(0.0f, grMax);
     meters.detectorDb = detMax;
-    meters.gate = gateEnv_;
+    meters.gate = controls_.gateOn ? gateEnv_ : 1.0f;
     meters.ghostActive = ghostSeen;
   }
 

@@ -465,7 +465,7 @@ void applyEvents(Plugin* s, const clap_input_events_t* in) {
     } else if (hdr->type == CLAP_EVENT_NOTE_ON) {
       const auto* n = reinterpret_cast<const clap_event_note_t*>(hdr);
       const int ghostNote = static_cast<int>(s->shared.get(P_GHOST_NOTE) + 0.5);
-      if (n->key == ghostNote) {
+      if (n->key == ghostNote && std::isfinite(n->velocity) && n->velocity > 0.0) {
         s->shared.set(P_GHOST, n->velocity * 100.0);
         s->shared.midiGhostTrigger.fetch_add(1, std::memory_order_relaxed);
       }

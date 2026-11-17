@@ -104,6 +104,20 @@ int main() {
   }
 
   {
+    // Gate On = off is a true gate bypass, not a closed gate.
+    Controls c = base();
+    c.gateOn = false;
+    std::vector<float> in(4096);
+    for (size_t i = 0; i < in.size(); ++i)
+      in[i] = 0.01f * std::sin(2.0f * 3.14159265f * 220.0f * i / kSr);
+    Render r = run(c, in);
+    const double a = rms(in, 1000, 3000);
+    const double b = rms(r.l, 1000, 3000);
+    std::printf("  gate off rms in=%.6f out=%.6f\n", a, b);
+    check(b > a * 0.5, "gate off bypasses the gate instead of muting");
+  }
+
+  {
     // A quiet ghost hit is removed without ghost mode and kept with it.  The
     // hit has body (1 kHz) and top (6 kHz) so ghost mode must open both the
     // main gate and the de-bleed high band.
