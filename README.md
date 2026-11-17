@@ -41,6 +41,8 @@ weights, crossovers and sensible gate defaults. It is not a full preset.
 
 ## Ghost note mode
 
+![Bleed Out — Snare ghost mode](docs/snare-ghost.png)
+
 Ghost notes are quiet snare hits that a normal gate would remove. Bleed Out
 adds a second, lower-threshold transient detector and a dedicated ghost
 envelope.
