@@ -71,7 +71,7 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
 
     {"ghost_mode", "Ghost Mode", "Ghost", 0.0, 1.0, 0.0, true, false, true,
      nullptr, {}},
-    {"ghost", "Ghost", "Ghost", 0.0, 100.0, 50.0, false, false, false, "%", {}},
+    {"ghost", "Ghost", "Ghost", 0.0, 100.0, 75.0, false, false, false, "%", {}},
     {"ghost_note", "Ghost Note", "MIDI", 0.0, 127.0, 38.0, true, false, false,
      nullptr, {}},
     {"ghost_cc", "Ghost CC", "MIDI", 0.0, 127.0, 74.0, true, false, false,

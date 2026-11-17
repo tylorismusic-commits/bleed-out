@@ -26,7 +26,7 @@ struct Preset {
 inline constexpr PresetValue kInit[] = {
     PV(P_POWER, 1), PV(P_BYPASS, 0), PV(P_INPUT, 0), PV(P_OUTPUT, 0),
     PV(P_DRUM, 0), PV(P_GATE_ON, 1), PV(P_THRESHOLD, -30),
-    PV(P_DEBLEED, 70), PV(P_GHOST_MODE, 0), PV(P_GHOST, 50),
+    PV(P_DEBLEED, 70), PV(P_GHOST_MODE, 0), PV(P_GHOST, 75),
     PV(P_GHOST_NOTE, 38), PV(P_GHOST_CC, 74)};
 
 inline constexpr PresetValue kKickTight[] = {

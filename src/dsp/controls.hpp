@@ -82,7 +82,7 @@ struct Controls {
   // Ghost note mode.  The amount is user/MIDI controlled; the ghost detector
   // itself is profile-aware.
   bool ghostMode = false;
-  float ghost = 50.0f;
+  float ghost = 75.0f;
   int ghostNote = 38;
   int ghostCc = 74;
   int ghostTrigger = 0;
