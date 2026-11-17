@@ -40,17 +40,17 @@ int main() {
     const double scale = static_cast<double>(s.width) / kPanelWidth;
     bounded = bounded && scale >= kMinUiScale - 1e-9 && scale <= kMaxUiScale + 1e-9;
   }
-  check(allAspect, "any requested size snaps to exactly 1040:720");
+  check(allAspect, "any requested size snaps to exactly 1040:640");
   check(idempotent, "snapping a valid size changes nothing");
   check(bounded, "snapped scale stays within the allowed range");
 
-  check(snapSize(100, 100).width == 520 && snapSize(100, 100).height == 360,
+  check(snapSize(100, 100).width == 520 && snapSize(100, 100).height == 320,
         "tiny request clamps to the minimum (0.5x)");
-  check(snapSize(9000, 9000).width == 2600 && snapSize(9000, 9000).height == 1800,
+  check(snapSize(9000, 9000).width == 2600 && snapSize(9000, 9000).height == 1600,
         "huge request clamps to the maximum (2.5x)");
-  check(snapSize(1560, 900).width == 1560 && snapSize(1560, 900).height == 1080,
+  check(snapSize(1560, 900).width == 1560 && snapSize(1560, 900).height == 960,
         "width drag wins over a mismatched height");
-  check(snapSize(1040, 720).width == 1040 && snapSize(1040, 720).height == 720,
+  check(snapSize(1040, 640).width == 1040 && snapSize(1040, 640).height == 640,
         "nominal size is unchanged");
 
   std::printf("%d failure(s)\n", gFailures);

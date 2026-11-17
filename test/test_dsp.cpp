@@ -206,20 +206,29 @@ int main() {
 
     const int qa = static_cast<int>(kSr * 0.36f);
     const int qb = static_cast<int>(kSr * 0.56f);
+    const int aa = static_cast<int>(kSr * 0.100f);  // first 6 ms: the attack
+    const int ab = static_cast<int>(kSr * 0.106f);
+    const int sa = static_cast<int>(kSr * 0.125f);  // 25-55 ms: the sustain
+    const int sb = static_cast<int>(kSr * 0.155f);
     const int ha = static_cast<int>(kSr * 0.105f);
     const int hb = static_cast<int>(kSr * 0.145f);
     const double bleedOff = toneLevel(rOff.l, qa, qb, 8000.0);
     const double bleedOn = toneLevel(rOn.l, qa, qb, 8000.0);
     const double bodyOff = toneLevel(rOff.l, ha, hb, 200.0);
     const double bodyOn = toneLevel(rOn.l, ha, hb, 200.0);
-    const double attackOff = toneLevel(rOff.l, ha, hb, 8000.0);
-    const double attackOn = toneLevel(rOn.l, ha, hb, 8000.0);
+    const double attackOff = toneLevel(rOff.l, aa, ab, 8000.0);
+    const double attackOn = toneLevel(rOn.l, aa, ab, 8000.0);
+    const double sustainOff = toneLevel(rOff.l, sa, sb, 8000.0);
+    const double sustainOn = toneLevel(rOn.l, sa, sb, 8000.0);
     std::printf(
-        "  debleed: bleed %.1f -> %.1f dB, body %.1f -> %.1f dB, attack %.1f -> %.1f dB\n",
+        "  debleed: bleed %.1f -> %.1f dB, body %.1f -> %.1f dB, "
+        "attack %.1f -> %.1f dB, sustain %.1f -> %.1f dB\n",
         db(bleedOff), db(bleedOn), db(bodyOff), db(bodyOn), db(attackOff),
-        db(attackOn));
+        db(attackOn), db(sustainOff), db(sustainOn));
     check(db(bleedOff) - db(bleedOn) > 20.0,
           "DeBleed 100 cuts cymbal bleed by more than 20 dB between hits");
+    check(db(sustainOff) - db(sustainOn) > 8.0,
+          "DeBleed removes cymbal wash during the hit after the attack");
     check(std::fabs(db(bodyOff) - db(bodyOn)) < 1.0,
           "DeBleed leaves the drum body untouched");
     check(std::fabs(db(attackOff) - db(attackOn)) < 1.5,

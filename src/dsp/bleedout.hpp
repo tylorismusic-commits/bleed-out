@@ -113,7 +113,8 @@ public:
     ghostHold_ = 0;
     midiGhostHold_ = 0;
     gateOpen_ = false;
-    bodyOpen_ = false;
+    bodyWasHot_ = false;
+    mainWasHot_ = false;
     envDet_ = 0.0f;
     for (int i = 0; i < 3; ++i) {
       bandFast_[i] = 0.0f;
@@ -185,17 +186,27 @@ public:
       gateEnv_ += (target ? (1.0f - gateEnv_) : (0.0f - gateEnv_)) *
                   (target ? attackCoef_ : releaseCoef_);
 
-      // Body gate for the high-band sidechain.  It deliberately uses its own
-      // short hold/release: the high band should follow the drum's attack and
-      // then close quickly instead of riding the main gate's long tail.
+      // De-bleed sidechain.  It is one-shot, not a level gate: each drum hit
+      // opens the high band for the attack, then the band closes again even
+      // while the body is still ringing.  That is what removes cymbal wash
+      // *during* the hit instead of only between hits.  The main gate edge is
+      // a backup trigger for bright drums whose body detector is weak.
+      if (det > threshold_ && !mainWasHot_) {
+        mainWasHot_ = true;
+        bodyHold_ = std::max(bodyHold_, hbHoldSamples_);
+      } else if (det < closeThreshold_) {
+        mainWasHot_ = false;
+      }
       if (bodyDet > bodyThreshold_) {
-        bodyOpen_ = true;
-        bodyHold_ = hbHoldSamples_;
+        if (!bodyWasHot_) {
+          bodyWasHot_ = true;
+          bodyHold_ = hbHoldSamples_;
+        }
       } else if (bodyDet < closeBodyThreshold_) {
-        bodyOpen_ = false;
+        bodyWasHot_ = false;
       }
       if (bodyHold_ > 0) --bodyHold_;
-      const bool bodyTarget = controls_.gateOn && (bodyOpen_ || bodyHold_ > 0);
+      const bool bodyTarget = controls_.gateOn && (bodyHold_ > 0);
       bodyEnv_ += (bodyTarget ? (1.0f - bodyEnv_) : (0.0f - bodyEnv_)) *
                   (bodyTarget ? hbAttackCoef_ : hbReleaseCoef_);
 
@@ -325,7 +336,8 @@ private:
   bool gateOpen_ = false;
   float gateEnv_ = 0.0f;
 
-  bool bodyOpen_ = false;
+  bool bodyWasHot_ = false;
+  bool mainWasHot_ = false;
   int bodyHold_ = 0;
   float bodyEnv_ = 0.0f;
 

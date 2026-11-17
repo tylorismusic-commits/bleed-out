@@ -262,40 +262,25 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     widgets_.push_back(k);
   };
 
-  auto pill = [&](uint32_t param, double x, double y, double w, double h,
-                  const char* label) {
-    Widget b{};
-    b.kind = Kind::Pill;
-    b.param = param;
-    b.x = x;
-    b.y = y;
-    b.w = w;
-    b.h = h;
-    b.value = 1.0;
-    b.label = label;
-    widgets_.push_back(b);
-  };
-
   // Only the three controls that matter: Threshold, DeBleed and Ghost.
-  knob(P_THRESHOLD, 220, 424, 48, "THRESHOLD");
-  knob(P_DEBLEED, 500, 424, 48, "DEBLEED");
-  knob(P_GHOST, 780, 424, 44, "GHOST AMOUNT", sc(kScaleGhost));
+  knob(P_THRESHOLD, 220, 386, 48, "THRESHOLD");
+  knob(P_DEBLEED, 500, 386, 48, "DEBLEED");
+  knob(P_GHOST, 780, 386, 44, "GHOST AMOUNT", sc(kScaleGhost));
   {
     Widget g{};
     g.kind = Kind::Ghost;
     g.param = P_GHOST_MODE;
     g.x = 850;
-    g.y = 394;
+    g.y = 356;
     g.w = 72;
     g.h = 72;
     g.label = "GHOST MODE";
     widgets_.push_back(g);
   }
 
-  // Global.
-  pill(P_BYPASS, 850, 608, 80, 24, "BYPASS");
-  knob(P_INPUT, 80, 620, 24, "INPUT", sc(kScaleDb18), true);
-  knob(P_OUTPUT, 960, 620, 24, "OUTPUT", sc(kScaleDb18), true);
+  // Global.  Power is the bypass; the bottom corners are just trim.
+  knob(P_INPUT, 100, 553, 24, "INPUT", sc(kScaleDb18));
+  knob(P_OUTPUT, 930, 553, 24, "OUTPUT", sc(kScaleDb18));
 }
 
 bool Panel::hitWidget(const Widget& w, double x, double y) const {
@@ -468,9 +453,9 @@ void Panel::draw(cairo_t* cr, Shared& shared, const PanelState& state) {
   drawHeader(cr, shared, state);
   drawBody(cr, drum);
   drawScope(cr, shared, state);
-  drawLevelMeter(cr, 20, 150, 16, 400, state.inLevelL, state.inLevelR, -60.0,
+  drawLevelMeter(cr, 18, 150, 20, 350, state.inLevelL, state.inLevelR, -60.0,
                  0.0, true);
-  drawLevelMeter(cr, 986, 150, 16, 400, state.outLevelL, state.outLevelR,
+  drawLevelMeter(cr, 980, 150, 20, 350, state.outLevelL, state.outLevelR,
                  -60.0, 3.0, false);
 
   for (const Widget& w : widgets_) {
@@ -484,7 +469,7 @@ void Panel::draw(cairo_t* cr, Shared& shared, const PanelState& state) {
     const std::string value =
         std::string(kParamSpecs[p].name) + "   " +
         formatParamValue(shared, p, shared.get(p));
-    text(cr, value.c_str(), kPanelWidth * 0.5, 709, 15, 1, 0.98, 0.80, 0.32);
+    text(cr, value.c_str(), kPanelWidth * 0.5, 629, 15, 1, 0.98, 0.80, 0.32);
   }
 
   if (editing_) drawTextEntry(cr, shared);
@@ -524,12 +509,12 @@ void Panel::drawHeader(cairo_t* cr, const Shared& shared,
 
 void Panel::drawBody(cairo_t* cr, int drum) const {
   const Skin skin = skinFor(drum);
-  cairo_pattern_t* pat = cairo_pattern_create_linear(0, 122, 0, 684);
+  cairo_pattern_t* pat = cairo_pattern_create_linear(0, 122, 0, 604);
   cairo_pattern_add_color_stop_rgb(pat, 0.0, skin.bodyTop.r, skin.bodyTop.g,
                                    skin.bodyTop.b);
   cairo_pattern_add_color_stop_rgb(pat, 1.0, skin.bodyBottom.r,
                                    skin.bodyBottom.g, skin.bodyBottom.b);
-  roundRect(cr, 16, 122, 1008, 562, 6);
+  roundRect(cr, 16, 122, 1008, 482, 6);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_pattern_destroy(pat);
@@ -538,7 +523,7 @@ void Panel::drawBody(cairo_t* cr, int drum) const {
     cairo_pattern_t* grain = cairo_pattern_create_for_surface(grain_);
     cairo_pattern_set_extend(grain, CAIRO_EXTEND_REPEAT);
     cairo_save(cr);
-    cairo_rectangle(cr, 17, 123, 1006, 560);
+    cairo_rectangle(cr, 17, 123, 1006, 480);
     cairo_clip(cr);
     cairo_set_source(cr, grain);
     cairo_paint_with_alpha(cr, 0.018);
@@ -552,12 +537,12 @@ void Panel::drawBody(cairo_t* cr, int drum) const {
   cairo_line_to(cr, 1022, 123.5);
   cairo_stroke(cr);
   setRgb(cr, {0.0, 0.0, 0.0}, 0.22);
-  cairo_move_to(cr, 18, 682.5);
-  cairo_line_to(cr, 1022, 682.5);
+  cairo_move_to(cr, 18, 602.5);
+  cairo_line_to(cr, 1022, 602.5);
   cairo_stroke(cr);
 
   for (double sx : {32.0, 1008.0}) {
-    for (double sy : {138.0, 668.0}) {
+    for (double sy : {138.0, 588.0}) {
       cairo_arc(cr, sx, sy, 4.5, 0, 2 * kPi);
       setRgb(cr, skin.screw, 0.9);
       cairo_fill(cr);
@@ -575,26 +560,26 @@ void Panel::drawBody(cairo_t* cr, int drum) const {
   cairo_stroke(cr);
 
   // Explain why there are only three knobs: the profile automates the rest.
-  text(cr, "PROFILE AUTOMATES REDUCTION / DECAY / ATTACK / SATURATION",
-       kPanelWidth * 0.5, 566, 10, 1, skin.legendDim.r, skin.legendDim.g,
+  text(cr, "GATE, TONE AND SATURATION AUTOMATED BY PROFILE",
+       kPanelWidth * 0.5, 490, 10, 1, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
 
   // Footer.
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.55);
-  cairo_rectangle(cr, 0, 684, kPanelWidth, 36);
+  cairo_rectangle(cr, 0, 604, kPanelWidth, 36);
   cairo_fill(cr);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.10);
-  cairo_move_to(cr, 0, 684.5);
-  cairo_line_to(cr, kPanelWidth, 684.5);
+  cairo_move_to(cr, 0, 604.5);
+  cairo_line_to(cr, kPanelWidth, 604.5);
   cairo_stroke(cr);
-  text(cr, skin.caption, kPanelWidth * 0.5, 709, 15, 1, 0.86, 0.82, 0.76);
+  text(cr, skin.caption, kPanelWidth * 0.5, 629, 15, 1, 0.86, 0.82, 0.76);
 }
 
 void Panel::drawScope(cairo_t* cr, const Shared& shared,
                       const PanelState& state) const {
   const int drum = static_cast<int>(shared.get(P_DRUM) + 0.5);
   const Skin skin = skinFor(drum);
-  const double x = 170, y = 136, w = 700, h = 180;
+  const double x = 170, y = 136, w = 700, h = 148;
 
   roundRect(cr, x, y, w, h, 4);
   cairo_set_source_rgba(cr, 0.025, 0.027, 0.030, 0.98);

@@ -44,7 +44,7 @@ int main() {
           "Snare profile applies its DeBleed default");
 
     // Ghost icon toggles ghost mode.
-    panel.pointerDown(shared, state, 886, 430, false);
+    panel.pointerDown(shared, state, 886, 392, false);
     panel.pointerUp();
     check(shared.get(P_GHOST_MODE) == 1.0, "ghost icon enables ghost mode");
 

@@ -12,7 +12,7 @@ namespace bleed {
 
 // The editor is laid out once in logical units (kPanelWidth x kPanelHeight)
 // and scaled uniformly.  Scales move in steps of 1/80, because 1040 = 13 * 80
-// and 720 = 9 * 80: every step gives an exact 1040:720 window, with no rounding
+// and 640 = 8 * 80: every step gives an exact 1040:640 window, with no rounding
 // drift between width and height.
 constexpr int kScaleSteps = 80;
 constexpr int kMinScaleStep = 40;   // 0.5x

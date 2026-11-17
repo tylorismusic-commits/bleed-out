@@ -20,7 +20,7 @@ void check(bool ok, const char* what) {
 constexpr double kPlateX = 16.0;
 constexpr double kPlateY = 122.0;
 constexpr double kPlateW = 1008.0;
-constexpr double kPlateH = 562.0;
+constexpr double kPlateH = 482.0;
 
 bool overlaps(const Panel::WidgetRect& a, const Panel::WidgetRect& b) {
   const double ax2 = a.x + a.w, ay2 = a.y + a.h;

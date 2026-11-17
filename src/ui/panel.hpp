@@ -12,7 +12,7 @@
 namespace bleed {
 
 constexpr int kPanelWidth = 1040;
-constexpr int kPanelHeight = 720;
+constexpr int kPanelHeight = 640;
 
 struct PanelState {
   int presetIndex = -1;

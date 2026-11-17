@@ -42,24 +42,27 @@ The high band (cymbals, hi-hat, snare wires) is gated **from the drum body**,
 not from the cymbal wash itself. This is the same idea as the Nolly/FabFilter
 Saturn trick and the Black Salt Audio Silencer de-bleeding circuit: the low/mid
 body detector opens the high band for the attack, then the high band closes
-quickly while the body has decayed. DeBleed sets how far down that high band goes
-between hits.
+again **even while the body is still ringing**. DeBleed sets how far down that
+high band goes.
 
-The de-bleed sidechain has its own short hold/release (10/35 ms on Snare), so it
-does not ride the main gate's long tail. At DeBleed 100 the high band is 48 dB
-down between hits; at DeBleed 0 it is untouched.
+The de-bleed sidechain is one-shot, with its own short hold/release (4/16 ms on
+Snare), so it does not ride the main gate's long tail. At DeBleed 100 the high
+band is 48 dB down once the attack window closes; at DeBleed 0 it is untouched.
+The Snare crossover sits at 5 kHz, so the 2–5 kHz presence stays in the mid band
+while the hat/cymbal top gets removed.
 
-Measured on a synthetic snare (200 Hz body, continuous 8 kHz bleed), DeBleed
-0 → 100:
+Measured on a synthetic snare (200 Hz body, 4 kHz presence, continuous 8 kHz
+bleed), DeBleed 0 → 100:
 
 | Signal | DeBleed 0 | DeBleed 100 |
 |---|---:|---:|
-| Bleed between hits | −30.8 dB | −67.3 dB |
+| Bleed between hits | −31.3 dB | −65.5 dB |
+| Bleed during the hit, after the attack | −30.4 dB | −43.3 dB |
 | Snare body at the hit | −11.0 dB | −11.0 dB |
-| High-frequency attack at the hit | −30.4 dB | −30.4 dB |
+| High-frequency attack | −30.6 dB | −31.3 dB |
 
-That is a 36 dB cut in bleed with the body and attack unchanged. The test is
-part of `bleed_dsp`.
+That is a 34 dB cut in bleed between hits, 13 dB during the hit, and the body
+and attack are unchanged. The test is part of `bleed_dsp`.
 
 ## Drum profiles
 
