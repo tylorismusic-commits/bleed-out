@@ -1,0 +1,27 @@
+# Maintainer: tylor <tylorismusic@users.noreply.github.com>
+pkgname=bleed-out
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Multiband de-bleed gate for drums (CLAP + LV2)"
+arch=('x86_64')
+url="https://github.com/tylorismusic-commits/bleed-out"
+license=('GPL-3.0-or-later')
+depends=('cairo' 'freetype2' 'libx11' 'lv2')
+makedepends=('cmake' 'pkgconf' 'lilv' 'libxtst' 'xorg-server-xvfb')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cmake -S "$pkgname-$pkgver" -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build -j"$(nproc)"
+}
+
+check() {
+  ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
