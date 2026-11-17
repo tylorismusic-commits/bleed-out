@@ -1,12 +1,15 @@
 # Bleed Out
 
-**Version 0.1.0** · GPL-3.0-or-later
+**Version 0.1.0-alpha.1** · GPL-3.0-or-later
+
+> **Public alpha.** The de-bleed gate is usable and measured; factory presets
+> and final tuning are planned after feedback. Expect changes.
 
 A multiband de-bleed gate for drums, built in the same visual language as Comp
 Suite and the rest of the Suite series. It removes hi-hat and cymbal bleed while
 keeping the attack, body and tone of the drum.
 
-This is the working prototype for local testing.
+This is the public-alpha prototype.
 
 ![Bleed Out — Kick](docs/kick.png)
 

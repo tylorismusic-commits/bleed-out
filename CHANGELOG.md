@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — 2026-11-17
+## 0.1.0-alpha.1 — public alpha — 2026-11-17
 
 - First working Bleed Out prototype: CLAP + LV2, 1040×640 Comp Suite-style
   panel, widened meters and a compact three-knob layout.
