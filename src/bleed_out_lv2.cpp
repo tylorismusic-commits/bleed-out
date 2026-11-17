@@ -152,13 +152,13 @@ void run(LV2_Handle handle, uint32_t frames) {
       if (status == 0x90 && data[2] > 0) {
         const int ghostNote = static_cast<int>(p->shared.get(bleed::P_GHOST_NOTE) + 0.5);
         if (data[1] == ghostNote) {
-          p->shared.setFromHost(bleed::P_GHOST, (data[2] / 127.0) * 100.0);
+          p->shared.set(bleed::P_GHOST, (data[2] / 127.0) * 100.0);
           p->shared.midiGhostTrigger.fetch_add(1, std::memory_order_relaxed);
         }
       } else if (status == 0xb0) {
         const int ghostCc = static_cast<int>(p->shared.get(bleed::P_GHOST_CC) + 0.5);
         if (data[1] == ghostCc) {
-          p->shared.setFromHost(bleed::P_GHOST, (data[2] / 127.0) * 100.0);
+          p->shared.set(bleed::P_GHOST, (data[2] / 127.0) * 100.0);
         }
       }
     }

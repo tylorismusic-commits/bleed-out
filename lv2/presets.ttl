@@ -53,16 +53,11 @@
     [ lv2:symbol "drum" ; pset:value 0 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -30 ] ,
-    [ lv2:symbol "reduction" ; pset:value 60 ] ,
     [ lv2:symbol "debleed" ; pset:value 70 ] ,
-    [ lv2:symbol "length" ; pset:value 80 ] ,
-    [ lv2:symbol "attack" ; pset:value 0.5 ] ,
-    [ lv2:symbol "hold" ; pset:value 5 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 6 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 2 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
     [ lv2:symbol "ghost" ; pset:value 50 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 30 ] .
+    [ lv2:symbol "ghost_note" ; pset:value 38 ] ,
+    [ lv2:symbol "ghost_cc" ; pset:value 74 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_kick-tight>
     a pset:Preset ;
@@ -75,17 +70,9 @@
     [ lv2:symbol "drum" ; pset:value 0 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -28 ] ,
-    [ lv2:symbol "reduction" ; pset:value 60 ] ,
     [ lv2:symbol "debleed" ; pset:value 75 ] ,
-    [ lv2:symbol "length" ; pset:value 70 ] ,
-    [ lv2:symbol "attack" ; pset:value 0.5 ] ,
-    [ lv2:symbol "hold" ; pset:value 4 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 6 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 2 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 25 ] ,
-    [ lv2:symbol "low_gain" ; pset:value 1.5 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value -1 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_kick-body>
     a pset:Preset ;
@@ -98,18 +85,9 @@
     [ lv2:symbol "drum" ; pset:value 0 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -34 ] ,
-    [ lv2:symbol "reduction" ; pset:value 45 ] ,
     [ lv2:symbol "debleed" ; pset:value 55 ] ,
-    [ lv2:symbol "length" ; pset:value 120 ] ,
-    [ lv2:symbol "attack" ; pset:value 1 ] ,
-    [ lv2:symbol "hold" ; pset:value 10 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 8 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 3 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 35 ] ,
-    [ lv2:symbol "low_gain" ; pset:value 2.5 ] ,
-    [ lv2:symbol "low_drive" ; pset:value 20 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value -1.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_snare-tight>
     a pset:Preset ;
@@ -122,17 +100,9 @@
     [ lv2:symbol "drum" ; pset:value 1 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -30 ] ,
-    [ lv2:symbol "reduction" ; pset:value 65 ] ,
     [ lv2:symbol "debleed" ; pset:value 85 ] ,
-    [ lv2:symbol "length" ; pset:value 110 ] ,
-    [ lv2:symbol "attack" ; pset:value 0.8 ] ,
-    [ lv2:symbol "hold" ; pset:value 12 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 6 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 2 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 30 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value 1 ] ,
-    [ lv2:symbol "high_gain" ; pset:value 0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_snare-natural>
     a pset:Preset ;
@@ -145,17 +115,9 @@
     [ lv2:symbol "drum" ; pset:value 1 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -36 ] ,
-    [ lv2:symbol "reduction" ; pset:value 40 ] ,
     [ lv2:symbol "debleed" ; pset:value 55 ] ,
-    [ lv2:symbol "length" ; pset:value 180 ] ,
-    [ lv2:symbol "attack" ; pset:value 1.5 ] ,
-    [ lv2:symbol "hold" ; pset:value 20 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 8 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 3 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 20 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value 0.5 ] ,
-    [ lv2:symbol "high_gain" ; pset:value 0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_ghost-notes>
     a pset:Preset ;
@@ -168,19 +130,11 @@
     [ lv2:symbol "drum" ; pset:value 1 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -28 ] ,
-    [ lv2:symbol "reduction" ; pset:value 65 ] ,
     [ lv2:symbol "debleed" ; pset:value 80 ] ,
-    [ lv2:symbol "length" ; pset:value 120 ] ,
-    [ lv2:symbol "attack" ; pset:value 0.8 ] ,
-    [ lv2:symbol "hold" ; pset:value 15 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 6 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 2 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 1 ] ,
     [ lv2:symbol "ghost" ; pset:value 75 ] ,
     [ lv2:symbol "ghost_note" ; pset:value 38 ] ,
-    [ lv2:symbol "ghost_cc" ; pset:value 74 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 30 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value 1 ] .
+    [ lv2:symbol "ghost_cc" ; pset:value 74 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_tom-room>
     a pset:Preset ;
@@ -193,17 +147,9 @@
     [ lv2:symbol "drum" ; pset:value 2 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -34 ] ,
-    [ lv2:symbol "reduction" ; pset:value 40 ] ,
     [ lv2:symbol "debleed" ; pset:value 55 ] ,
-    [ lv2:symbol "length" ; pset:value 200 ] ,
-    [ lv2:symbol "attack" ; pset:value 1.5 ] ,
-    [ lv2:symbol "hold" ; pset:value 25 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 8 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 3 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 25 ] ,
-    [ lv2:symbol "low_gain" ; pset:value 1 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value -0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_hat-tight>
     a pset:Preset ;
@@ -216,16 +162,9 @@
     [ lv2:symbol "drum" ; pset:value 3 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -34 ] ,
-    [ lv2:symbol "reduction" ; pset:value 50 ] ,
     [ lv2:symbol "debleed" ; pset:value 30 ] ,
-    [ lv2:symbol "length" ; pset:value 45 ] ,
-    [ lv2:symbol "attack" ; pset:value 0.4 ] ,
-    [ lv2:symbol "hold" ; pset:value 4 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 6 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 1.5 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 15 ] ,
-    [ lv2:symbol "high_gain" ; pset:value 1 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_ride-natural>
     a pset:Preset ;
@@ -238,16 +177,9 @@
     [ lv2:symbol "drum" ; pset:value 4 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -38 ] ,
-    [ lv2:symbol "reduction" ; pset:value 30 ] ,
     [ lv2:symbol "debleed" ; pset:value 20 ] ,
-    [ lv2:symbol "length" ; pset:value 80 ] ,
-    [ lv2:symbol "attack" ; pset:value 0.6 ] ,
-    [ lv2:symbol "hold" ; pset:value 8 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 6 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 2 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 10 ] ,
-    [ lv2:symbol "high_gain" ; pset:value 0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_room-glue>
     a pset:Preset ;
@@ -260,17 +192,9 @@
     [ lv2:symbol "drum" ; pset:value 5 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -38 ] ,
-    [ lv2:symbol "reduction" ; pset:value 20 ] ,
     [ lv2:symbol "debleed" ; pset:value 15 ] ,
-    [ lv2:symbol "length" ; pset:value 300 ] ,
-    [ lv2:symbol "attack" ; pset:value 2 ] ,
-    [ lv2:symbol "hold" ; pset:value 30 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 8 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 3 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 20 ] ,
-    [ lv2:symbol "low_gain" ; pset:value -0.5 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value 0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_oh-wide>
     a pset:Preset ;
@@ -283,16 +207,9 @@
     [ lv2:symbol "drum" ; pset:value 6 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -40 ] ,
-    [ lv2:symbol "reduction" ; pset:value 15 ] ,
     [ lv2:symbol "debleed" ; pset:value 10 ] ,
-    [ lv2:symbol "length" ; pset:value 300 ] ,
-    [ lv2:symbol "attack" ; pset:value 2 ] ,
-    [ lv2:symbol "hold" ; pset:value 30 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 8 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 3 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 15 ] ,
-    [ lv2:symbol "high_gain" ; pset:value 0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 
 <https://github.com/tylorismusic-commits/bleed-out#preset_bus-glue>
     a pset:Preset ;
@@ -305,16 +222,7 @@
     [ lv2:symbol "drum" ; pset:value 7 ] ,
     [ lv2:symbol "gate_on" ; pset:value 1 ] ,
     [ lv2:symbol "threshold" ; pset:value -42 ] ,
-    [ lv2:symbol "reduction" ; pset:value 10 ] ,
     [ lv2:symbol "debleed" ; pset:value 0 ] ,
-    [ lv2:symbol "length" ; pset:value 400 ] ,
-    [ lv2:symbol "attack" ; pset:value 5 ] ,
-    [ lv2:symbol "hold" ; pset:value 50 ] ,
-    [ lv2:symbol "hysteresis" ; pset:value 8 ] ,
-    [ lv2:symbol "lookahead" ; pset:value 3 ] ,
     [ lv2:symbol "ghost_mode" ; pset:value 0 ] ,
-    [ lv2:symbol "sat_mix" ; pset:value 20 ] ,
-    [ lv2:symbol "low_gain" ; pset:value 0.5 ] ,
-    [ lv2:symbol "mid_gain" ; pset:value 0.5 ] ,
-    [ lv2:symbol "high_gain" ; pset:value 0.5 ] .
+    [ lv2:symbol "ghost" ; pset:value 50 ] .
 

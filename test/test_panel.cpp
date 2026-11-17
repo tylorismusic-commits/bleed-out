@@ -40,16 +40,23 @@ int main() {
     check(shared.get(P_DRUM) == 1.0, "Snare tab selects Snare");
     check(std::fabs(shared.get(P_THRESHOLD) - kProfiles[1].thresholdDb) < 1e-6,
           "Snare profile applies its threshold");
+    check(std::fabs(shared.get(P_DEBLEED) - kProfiles[1].deBleed) < 1e-6,
+          "Snare profile applies its DeBleed default");
 
     // Ghost icon toggles ghost mode.
-    panel.pointerDown(shared, state, 882, 380, false);
+    panel.pointerDown(shared, state, 886, 430, false);
     panel.pointerUp();
     check(shared.get(P_GHOST_MODE) == 1.0, "ghost icon enables ghost mode");
 
-    // Gate pill.
-    panel.pointerDown(shared, state, 700, 312, false);
-    panel.pointerUp();
-    check(shared.get(P_GATE_ON) == 0.0, "gate pill bypasses the gate");
+    // Only three primary knobs are exposed; the rest is automated.
+    int primary = 0;
+    for (const auto& r : panel.widgetRects()) {
+      if (r.knob && (r.param == P_THRESHOLD || r.param == P_DEBLEED ||
+                     r.param == P_GHOST)) {
+        ++primary;
+      }
+    }
+    check(primary == 3, "primary controls are exactly Threshold, DeBleed and Ghost");
   }
 
   {
@@ -85,9 +92,9 @@ int main() {
     check(parseParamValue(shared, P_THRESHOLD, "-40 dB", &v) &&
               std::fabs(v + 40.0) < 1e-9,
           "typed threshold accepts -40 dB");
-    check(parseParamValue(shared, P_LENGTH, "250 ms", &v) &&
-              std::fabs(v - 250.0) < 1e-9,
-          "typed length accepts 250 ms");
+    check(parseParamValue(shared, P_DEBLEED, "85 %", &v) &&
+              std::fabs(v - 85.0) < 1e-9,
+          "typed DeBleed accepts 85 %");
     check(parseParamValue(shared, P_DRUM, "Snare", &v) &&
               std::fabs(v - 1.0) < 1e-9,
           "typed drum accepts Snare");

@@ -16,33 +16,14 @@ enum ParamId : uint32_t {
   P_BYPASS,
   P_INPUT,
   P_OUTPUT,
-
   P_DRUM,
-
   P_GATE_ON,
   P_THRESHOLD,
-  P_REDUCTION,
   P_DEBLEED,
-  P_LENGTH,
-  P_ATTACK,
-  P_HOLD,
-  P_HYSTERESIS,
-  P_LOOKAHEAD,
-
-  P_LOW_GAIN,
-  P_MID_GAIN,
-  P_HIGH_GAIN,
-  P_LOW_DRIVE,
-  P_MID_DRIVE,
-  P_HIGH_DRIVE,
-  P_SAT_MIX,
-
   P_GHOST_MODE,
   P_GHOST,
   P_GHOST_NOTE,
   P_GHOST_CC,
-  P_LISTEN,
-
   P_COUNT
 };
 
@@ -85,33 +66,8 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
     {"gate_on", "Gate On", "Gate", 0.0, 1.0, 1.0, true, false, true, nullptr, {}},
     {"threshold", "Threshold", "Gate", -60.0, 0.0, -30.0, false, false, false,
      "dB", {}},
-    {"reduction", "Reduction", "Gate", 0.0, 80.0, 60.0, false, false, false, "dB",
-     {}},
     {"debleed", "DeBleed", "Gate", 0.0, 100.0, 70.0, false, false, false, "%",
      {}},
-    {"length", "Length", "Gate", 10.0, 1000.0, 80.0, false, false, false, "ms",
-     {}},
-    {"attack", "Attack", "Gate", 0.1, 50.0, 0.5, false, false, false, "ms", {}},
-    {"hold", "Hold", "Gate", 0.0, 200.0, 5.0, false, false, false, "ms", {}},
-    {"hysteresis", "Hysteresis", "Gate", 0.0, 20.0, 6.0, false, false, false,
-     "dB", {}},
-    {"lookahead", "Lookahead", "Gate", 0.0, 5.0, 2.0, false, false, false, "ms",
-     {}},
-
-    {"low_gain", "Low Gain", "Multiband", -12.0, 12.0, 0.0, false, false, false,
-     "dB", {}},
-    {"mid_gain", "Mid Gain", "Multiband", -12.0, 12.0, 0.0, false, false, false,
-     "dB", {}},
-    {"high_gain", "High Gain", "Multiband", -12.0, 12.0, 0.0, false, false,
-     false, "dB", {}},
-    {"low_drive", "Low Drive", "Multiband", 0.0, 100.0, 0.0, false, false,
-     false, "%", {}},
-    {"mid_drive", "Mid Drive", "Multiband", 0.0, 100.0, 0.0, false, false,
-     false, "%", {}},
-    {"high_drive", "High Drive", "Multiband", 0.0, 100.0, 0.0, false, false,
-     false, "%", {}},
-    {"sat_mix", "Sat Mix", "Multiband", 0.0, 100.0, 30.0, false, false, false,
-     "%", {}},
 
     {"ghost_mode", "Ghost Mode", "Ghost", 0.0, 1.0, 0.0, true, false, true,
      nullptr, {}},
@@ -120,7 +76,6 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
      nullptr, {}},
     {"ghost_cc", "Ghost CC", "MIDI", 0.0, 127.0, 74.0, true, false, false,
      nullptr, {}},
-    {"listen", "Listen", "Gate", 0.0, 1.0, 0.0, true, true, true, nullptr, {}},
 };
 
 static_assert(sizeof(kParamSpecs) / sizeof(kParamSpecs[0]) == P_COUNT,
@@ -128,6 +83,8 @@ static_assert(sizeof(kParamSpecs) / sizeof(kParamSpecs[0]) == P_COUNT,
 
 class Shared {
 public:
+  static constexpr int kScopeSize = 128;
+
   Shared() {
     for (uint32_t p = 0; p < P_COUNT; ++p) {
       values_[p].store(kParamSpecs[p].def, std::memory_order_relaxed);
@@ -190,8 +147,6 @@ public:
     return midiGhostTrigger.exchange(0, std::memory_order_acq_rel);
   }
 
-  static constexpr int kScopeSize = 128;
-
   std::atomic<float> inPeakDb, outPeakDb;
   std::atomic<float> inPeakLDb, inPeakRDb;
   std::atomic<float> outPeakLDb, outPeakRDb;
@@ -209,12 +164,10 @@ private:
 
 inline void applyDrumDefaults(Shared& s, int drum) noexcept {
   drum = std::clamp(drum, 0, kDrumCount - 1);
-  const Profile& p = kProfiles[drum];
-  s.setFromHost(P_THRESHOLD, p.thresholdDb);
-  s.setFromHost(P_ATTACK, p.attackMs);
-  s.setFromHost(P_HOLD, p.holdMs);
-  s.setFromHost(P_LENGTH, p.lengthMs);
-  s.setFromHost(P_DEBLEED, p.deBleed);
+  // Use set() so the host sees the profile change and does not overwrite it
+  // with its cached parameter values.
+  s.set(P_THRESHOLD, kProfiles[drum].thresholdDb);
+  s.set(P_DEBLEED, kProfiles[drum].deBleed);
 }
 
 inline Controls controlsFrom(Shared& s) noexcept {
@@ -226,26 +179,12 @@ inline Controls controlsFrom(Shared& s) noexcept {
   c.outputDb = static_cast<float>(s.get(P_OUTPUT));
   c.gateOn = s.get(P_GATE_ON) > 0.5;
   c.thresholdDb = static_cast<float>(s.get(P_THRESHOLD));
-  c.reductionDb = static_cast<float>(s.get(P_REDUCTION));
   c.deBleed = static_cast<float>(s.get(P_DEBLEED));
-  c.lengthMs = static_cast<float>(s.get(P_LENGTH));
-  c.attackMs = static_cast<float>(s.get(P_ATTACK));
-  c.holdMs = static_cast<float>(s.get(P_HOLD));
-  c.hysteresisDb = static_cast<float>(s.get(P_HYSTERESIS));
-  c.lookaheadMs = static_cast<float>(s.get(P_LOOKAHEAD));
-  c.lowGainDb = static_cast<float>(s.get(P_LOW_GAIN));
-  c.midGainDb = static_cast<float>(s.get(P_MID_GAIN));
-  c.highGainDb = static_cast<float>(s.get(P_HIGH_GAIN));
-  c.lowDrive = static_cast<float>(s.get(P_LOW_DRIVE));
-  c.midDrive = static_cast<float>(s.get(P_MID_DRIVE));
-  c.highDrive = static_cast<float>(s.get(P_HIGH_DRIVE));
-  c.satMix = static_cast<float>(s.get(P_SAT_MIX) / 100.0);
   c.ghostMode = s.get(P_GHOST_MODE) > 0.5;
   c.ghost = static_cast<float>(s.get(P_GHOST));
   c.ghostNote = static_cast<int>(s.get(P_GHOST_NOTE) + 0.5);
   c.ghostCc = static_cast<int>(s.get(P_GHOST_CC) + 0.5);
   c.ghostTrigger = static_cast<int>(s.takeGhostTrigger());
-  c.listen = s.get(P_LISTEN) > 0.5;
   return c;
 }
 

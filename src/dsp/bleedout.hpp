@@ -16,6 +16,11 @@
 
 namespace bleed {
 
+// The Nolly/Silencer idea: gate/expand the high band from the drum body, not
+// from the cymbal wash.  The low/mid detector opens the high-band gate; the
+// DeBleed control sets how much the high band is attenuated when the body is
+// absent.  The main gate handles the full-band signal; the high-band gate is a
+// sidechained expander.
 class BleedOut {
 public:
   void prepare(float sampleRate) noexcept {
@@ -24,20 +29,18 @@ public:
     crossDetR_.prepare(sr_);
     crossAudL_.prepare(sr_);
     crossAudR_.prepare(sr_);
-    setProfile(0);
-
-    delaySize_ = std::max(8, static_cast<int>(sr_ * 0.010f) + 4);
+    lookaheadSamples_ = std::max(1, static_cast<int>(sr_ * 0.002f));
+    delaySize_ = std::max(lookaheadSamples_ + 8,
+                          static_cast<int>(sr_ * 0.010f) + 4);
     delayL_.assign(static_cast<size_t>(delaySize_), 0.0f);
     delayR_.assign(static_cast<size_t>(delaySize_), 0.0f);
     delayWrite_ = 0;
-
+    fastRelease_ = std::exp(-1.0f / (0.020f * sr_));
+    detRelease_ = std::exp(-1.0f / (0.080f * sr_));
     input_.setTime(15.0f, sr_);
     output_.setTime(15.0f, sr_);
     input_.reset(1.0f);
     output_.reset(1.0f);
-    fastRelease_ = std::exp(-1.0f / (0.020f * sr_));
-    slowRelease_ = std::exp(-1.0f / (0.150f * sr_));
-    detRelease_ = std::exp(-1.0f / (0.080f * sr_));
     reset();
   }
 
@@ -45,25 +48,43 @@ public:
     controls_ = c;
     drum_ = std::clamp(c.drum, 0, kDrumCount - 1);
     if (drum_ != profileDrum_) {
-      setProfile(drum_);
+      profileDrum_ = drum_;
+      const Profile& p = kProfiles[drum_];
+      crossDetL_.setCrossovers(p.lowXover, p.highXover);
+      crossDetR_.setCrossovers(p.lowXover, p.highXover);
+      crossAudL_.setCrossovers(p.lowXover, p.highXover);
+      crossAudR_.setCrossovers(p.lowXover, p.highXover);
+      weights_[0] = p.lowWeight;
+      weights_[1] = p.midWeight;
+      weights_[2] = p.highWeight;
     }
+    const Profile& p = kProfiles[drum_];
     threshold_ = hdsp::dbToGain(c.thresholdDb);
-    closeThreshold_ = threshold_ * hdsp::dbToGain(-c.hysteresisDb);
-    minGain_ = hdsp::dbToGain(-c.reductionDb);
+    // The body detector is a band-weighted amplitude, so it sits below the
+    // full-band detector.  Use a lower threshold so quiet snare bodies and
+    // ghost notes still open the high band, but cymbal-only wash does not.
+    bodyThreshold_ = threshold_ * hdsp::dbToGain(-6.0f);
+    closeThreshold_ = threshold_ * hdsp::dbToGain(-p.hysteresisDb);
+    closeBodyThreshold_ = bodyThreshold_ * hdsp::dbToGain(-p.hysteresisDb);
+    minGain_ = hdsp::dbToGain(-p.reductionDb);
     deBleed_ = hdsp::clampf(c.deBleed * 0.01f, 0.0f, 1.0f);
-    attackCoef_ = 1.0f - hdsp::timeCoeff(std::max(0.1f, c.attackMs), sr_);
-    releaseCoef_ = 1.0f - hdsp::timeCoeff(std::max(1.0f, c.lengthMs), sr_);
-    holdSamples_ = static_cast<int>(c.holdMs * 0.001f * sr_);
-    lookaheadSamples_ = static_cast<int>(hdsp::clampf(c.lookaheadMs, 0.0f, 5.0f) *
-                                         0.001f * sr_);
-    lookaheadSamples_ = std::min(lookaheadSamples_, delaySize_ - 2);
-    lowGain_ = hdsp::dbToGain(c.lowGainDb);
-    midGain_ = hdsp::dbToGain(c.midGainDb);
-    highGain_ = hdsp::dbToGain(c.highGainDb);
-    lowDrive_ = 1.0f + hdsp::clampf(c.lowDrive * 0.01f, 0.0f, 1.0f) * 8.0f;
-    midDrive_ = 1.0f + hdsp::clampf(c.midDrive * 0.01f, 0.0f, 1.0f) * 8.0f;
-    highDrive_ = 1.0f + hdsp::clampf(c.highDrive * 0.01f, 0.0f, 1.0f) * 8.0f;
-    satMix_ = hdsp::clampf(c.satMix, 0.0f, 1.0f);
+    // DeBleed is an attenuation amount, not a linear gain: 50 % should sound
+    // like a real cut, 100 % should remove the bleed.
+    deBleedFloor_ = hdsp::dbToGain(-48.0f * deBleed_);
+    hbAttackCoef_ = 1.0f - hdsp::timeCoeff(0.3f, sr_);
+    hbReleaseCoef_ =
+        1.0f - hdsp::timeCoeff(std::max(2.0f, p.deBleedReleaseMs), sr_);
+    hbHoldSamples_ = static_cast<int>(p.deBleedHoldMs * 0.001f * sr_);
+    attackCoef_ = 1.0f - hdsp::timeCoeff(std::max(0.1f, p.attackMs), sr_);
+    releaseCoef_ = 1.0f - hdsp::timeCoeff(std::max(1.0f, p.lengthMs), sr_);
+    holdSamples_ = static_cast<int>(p.holdMs * 0.001f * sr_);
+    lowGain_ = hdsp::dbToGain(p.lowGainDb);
+    midGain_ = hdsp::dbToGain(p.midGainDb);
+    highGain_ = hdsp::dbToGain(p.highGainDb);
+    lowDrive_ = 1.0f + hdsp::clampf(p.lowDrive * 0.01f, 0.0f, 1.0f) * 8.0f;
+    midDrive_ = 1.0f + hdsp::clampf(p.midDrive * 0.01f, 0.0f, 1.0f) * 8.0f;
+    highDrive_ = 1.0f + hdsp::clampf(p.highDrive * 0.01f, 0.0f, 1.0f) * 8.0f;
+    satMix_ = hdsp::clampf(p.satMix * 0.01f, 0.0f, 1.0f);
     ghostAmount_ = hdsp::clampf(c.ghost * 0.01f, 0.0f, 1.0f);
     ghostRange_ = hdsp::dbToGain(-24.0f * ghostAmount_);
     ghostAttack_ = 1.0f - hdsp::timeCoeff(0.5f, sr_);
@@ -85,15 +106,17 @@ public:
     std::fill(delayR_.begin(), delayR_.end(), 0.0f);
     delayWrite_ = 0;
     gateEnv_ = 0.0f;
+    bodyEnv_ = 0.0f;
     ghostEnv_ = 0.0f;
     hold_ = 0;
+    bodyHold_ = 0;
     ghostHold_ = 0;
     midiGhostHold_ = 0;
     gateOpen_ = false;
+    bodyOpen_ = false;
     envDet_ = 0.0f;
     for (int i = 0; i < 3; ++i) {
       bandFast_[i] = 0.0f;
-      bandSlow_[i] = 0.0f;
     }
     lowSatL_.reset(); lowSatR_.reset();
     midSatL_.reset(); midSatR_.reset();
@@ -115,7 +138,6 @@ public:
       inPeakL = std::max(inPeakL, std::fabs(rawL));
       inPeakR = std::max(inPeakR, std::fabs(rawR));
 
-      // Delay the raw signal so the detector can open ahead of the transient.
       delayL_[delayWrite_] = rawL;
       delayR_[delayWrite_] = rawR;
       int read = delayWrite_ - lookaheadSamples_;
@@ -128,7 +150,6 @@ public:
       const float detL = rawL * gainIn;
       const float detR = rawR * gainIn;
 
-      // Detector split.
       float dl, dm, dh, drl, drm, drh;
       crossDetL_.process(detL, dl, dm, dh);
       crossDetR_.process(detR, drl, drm, drh);
@@ -138,11 +159,17 @@ public:
           std::max(std::fabs(dh), std::fabs(drh))};
       for (int b = 0; b < 3; ++b) {
         bandFast_[b] = std::max(bandPeak[b], bandFast_[b] * fastRelease_);
-        bandSlow_[b] = std::max(bandPeak[b], bandSlow_[b] * slowRelease_);
       }
       const float det = weights_[0] * bandFast_[0] +
                         weights_[1] * bandFast_[1] +
                         weights_[2] * bandFast_[2];
+      // Body detector for the high-band sidechain.  The high band is included
+      // at reduced weight so hats/rides still open their own high band, while a
+      // snare's cymbal wash does not dominate the body detector.
+      const float bodyDet =
+          (weights_[0] * bandFast_[0] + weights_[1] * bandFast_[1] +
+           weights_[2] * bandFast_[2] * 0.25f) /
+          std::max(0.001f, weights_[0] + weights_[1] + weights_[2] * 0.25f);
       envDet_ += (det - envDet_) * (1.0f - detRelease_);
       const float transient = std::max(0.0f, det - envDet_);
 
@@ -157,9 +184,22 @@ public:
       const bool target = controls_.gateOn && (gateOpen_ || hold_ > 0);
       gateEnv_ += (target ? (1.0f - gateEnv_) : (0.0f - gateEnv_)) *
                   (target ? attackCoef_ : releaseCoef_);
-      float gateGain = minGain_ + (1.0f - minGain_) * gateEnv_;
 
-      // Ghost note mode: a lower threshold plus a transient requirement.
+      // Body gate for the high-band sidechain.  It deliberately uses its own
+      // short hold/release: the high band should follow the drum's attack and
+      // then close quickly instead of riding the main gate's long tail.
+      if (bodyDet > bodyThreshold_) {
+        bodyOpen_ = true;
+        bodyHold_ = hbHoldSamples_;
+      } else if (bodyDet < closeBodyThreshold_) {
+        bodyOpen_ = false;
+      }
+      if (bodyHold_ > 0) --bodyHold_;
+      const bool bodyTarget = controls_.gateOn && (bodyOpen_ || bodyHold_ > 0);
+      bodyEnv_ += (bodyTarget ? (1.0f - bodyEnv_) : (0.0f - bodyEnv_)) *
+                  (bodyTarget ? hbAttackCoef_ : hbReleaseCoef_);
+
+      // Ghost note mode.
       bool ghostOpen = false;
       if (controls_.ghostMode && ghostAmount_ > 0.0f) {
         const float ghostThreshold = threshold_ * ghostRange_;
@@ -183,12 +223,22 @@ public:
                    (ghostTarget ? ghostAttack_ : ghostRelease_);
       const float ghostGain =
           minGain_ + (1.0f - minGain_) * ghostEnv_ * ghostAmount_;
+      float gateGain = minGain_ + (1.0f - minGain_) * gateEnv_;
       gateGain = std::max(gateGain, ghostGain);
+      float bodyGate = minGain_ + (1.0f - minGain_) * bodyEnv_;
+      bodyGate = std::max(bodyGate, ghostGain);
 
+      // High-band de-bleed: when the body is absent, close the high band by
+      // DeBleed.  At DeBleed=0 the high band is untouched; at 100 it is 48 dB
+      // down between hits.  The ghost envelope also opens it, so ghost notes
+      // keep their top end.
+      const float bodyPresence =
+          (bodyGate - minGain_) / std::max(0.001f, 1.0f - minGain_);
       const float highGate =
-          gateGain * (1.0f - deBleed_ * (1.0f - gateEnv_));
+          controls_.gateOn
+              ? deBleedFloor_ + (1.0f - deBleedFloor_) * bodyPresence
+              : 1.0f;
 
-      // Audio path split.
       float al, am, ah, arl, arm, arh;
       const float audL = dryL * gainIn;
       const float audR = dryR * gainIn;
@@ -210,8 +260,6 @@ public:
       outL *= gainOut;
       outR *= gainOut;
 
-      // Power/bypass crossfade to the delayed raw input, so timing does not
-      // move when the gate is switched out.
       const float active = controls_.power ? (controls_.bypass ? 0.0f : 1.0f) : 0.0f;
       outL = dryL + active * (outL - dryL);
       outR = dryR + active * (outR - dryR);
@@ -239,18 +287,6 @@ public:
   int latencySamples() const noexcept { return lookaheadSamples_; }
 
 private:
-  void setProfile(int drum) noexcept {
-    profileDrum_ = drum;
-    const Profile& p = kProfiles[drum];
-    crossDetL_.setCrossovers(p.lowXover, p.highXover);
-    crossDetR_.setCrossovers(p.lowXover, p.highXover);
-    crossAudL_.setCrossovers(p.lowXover, p.highXover);
-    crossAudR_.setCrossovers(p.lowXover, p.highXover);
-    weights_[0] = p.lowWeight;
-    weights_[1] = p.midWeight;
-    weights_[2] = p.highWeight;
-  }
-
   float saturate(hdsp::AsymShaper& shaper, float x, float drive) noexcept {
     if (satMix_ <= 0.0f) return x;
     const float wet = shaper.process(x, drive, 0.0f);
@@ -270,12 +306,18 @@ private:
   std::vector<float> delayL_, delayR_;
   int delaySize_ = 1;
   int delayWrite_ = 0;
-  int lookaheadSamples_ = 0;
+  int lookaheadSamples_ = 96;
 
   float threshold_ = 1.0f;
+  float bodyThreshold_ = 0.9f;
   float closeThreshold_ = 1.0f;
+  float closeBodyThreshold_ = 0.9f;
   float minGain_ = 0.001f;
   float deBleed_ = 0.7f;
+  float deBleedFloor_ = 1.0f;
+  float hbAttackCoef_ = 0.1f;
+  float hbReleaseCoef_ = 0.001f;
+  int hbHoldSamples_ = 0;
   float attackCoef_ = 0.1f;
   float releaseCoef_ = 0.001f;
   int holdSamples_ = 0;
@@ -283,17 +325,19 @@ private:
   bool gateOpen_ = false;
   float gateEnv_ = 0.0f;
 
+  bool bodyOpen_ = false;
+  int bodyHold_ = 0;
+  float bodyEnv_ = 0.0f;
+
   float lowGain_ = 1.0f, midGain_ = 1.0f, highGain_ = 1.0f;
   float lowDrive_ = 1.0f, midDrive_ = 1.0f, highDrive_ = 1.0f;
   float satMix_ = 0.0f;
 
   float bandFast_[3] = {};
-  float bandSlow_[3] = {};
   float weights_[3] = {0.8f, 0.15f, 0.05f};
   float envDet_ = 0.0f;
   float fastRelease_ = 0.99f;
-  float slowRelease_ = 0.999f;
-  float detRelease_ = 0.9995f;
+  float detRelease_ = 0.999f;
 
   float ghostAmount_ = 0.5f;
   float ghostRange_ = 0.1f;

@@ -276,47 +276,26 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     widgets_.push_back(b);
   };
 
-  // Primary gate controls.
-  knob(P_THRESHOLD, 140, 380, 36, "THRESHOLD");
-  knob(P_REDUCTION, 300, 380, 36, "REDUCTION");
-  knob(P_DEBLEED, 460, 380, 36, "DEBLEED");
-  knob(P_LENGTH, 620, 380, 36, "LENGTH");
-  knob(P_GHOST, 780, 380, 32, "GHOST", sc(kScaleGhost));
+  // Only the three controls that matter: Threshold, DeBleed and Ghost.
+  knob(P_THRESHOLD, 220, 424, 48, "THRESHOLD");
+  knob(P_DEBLEED, 500, 424, 48, "DEBLEED");
+  knob(P_GHOST, 780, 424, 44, "GHOST AMOUNT", sc(kScaleGhost));
   {
     Widget g{};
     g.kind = Kind::Ghost;
     g.param = P_GHOST_MODE;
     g.x = 850;
-    g.y = 348;
-    g.w = 64;
-    g.h = 64;
-    g.label = "GHOST";
+    g.y = 394;
+    g.w = 72;
+    g.h = 72;
+    g.label = "GHOST MODE";
     widgets_.push_back(g);
   }
-  pill(P_GATE_ON, 660, 300, 80, 24, "GATE");
 
-  // Advanced.
-  knob(P_ATTACK, 140, 500, 24, "ATTACK");
-  knob(P_HOLD, 300, 500, 24, "HOLD");
-  knob(P_HYSTERESIS, 460, 500, 24, "HYST");
-  knob(P_LOOKAHEAD, 620, 500, 24, "LOOK");
-  knob(P_GHOST_NOTE, 780, 500, 20, "MIDI NOTE");
-  knob(P_GHOST_CC, 900, 500, 20, "MIDI CC");
-
-  // Multiband and output.
-  knob(P_LOW_GAIN, 140, 620, 18, "LOW",
-       sc(kScaleDb12));
-  knob(P_LOW_DRIVE, 210, 620, 18, "DRIVE");
-  knob(P_MID_GAIN, 320, 620, 18, "MID",
-       sc(kScaleDb12));
-  knob(P_MID_DRIVE, 390, 620, 18, "DRIVE");
-  knob(P_HIGH_GAIN, 500, 620, 18, "HIGH",
-       sc(kScaleDb12));
-  knob(P_HIGH_DRIVE, 570, 620, 18, "DRIVE");
-  knob(P_SAT_MIX, 680, 620, 22, "SAT MIX");
-  pill(P_BYPASS, 730, 608, 80, 24, "BYPASS");
-  knob(P_INPUT, 850, 620, 20, "INPUT", sc(kScaleDb18), true);
-  knob(P_OUTPUT, 960, 620, 20, "OUTPUT", sc(kScaleDb18), true);
+  // Global.
+  pill(P_BYPASS, 850, 608, 80, 24, "BYPASS");
+  knob(P_INPUT, 80, 620, 24, "INPUT", sc(kScaleDb18), true);
+  knob(P_OUTPUT, 960, 620, 24, "OUTPUT", sc(kScaleDb18), true);
 }
 
 bool Panel::hitWidget(const Widget& w, double x, double y) const {
@@ -498,6 +477,16 @@ void Panel::draw(cairo_t* cr, Shared& shared, const PanelState& state) {
     drawWidget(cr, w, shared, state, drum);
   }
 
+  // While a knob is being dragged, show its exact value in the footer so the
+  // three controls never feel blind.
+  if (dragParam_ >= 0) {
+    const uint32_t p = static_cast<uint32_t>(dragParam_);
+    const std::string value =
+        std::string(kParamSpecs[p].name) + "   " +
+        formatParamValue(shared, p, shared.get(p));
+    text(cr, value.c_str(), kPanelWidth * 0.5, 709, 15, 1, 0.98, 0.80, 0.32);
+  }
+
   if (editing_) drawTextEntry(cr, shared);
   if (state.presetOpen) drawPresetList(cr, shared, state);
 
@@ -585,12 +574,9 @@ void Panel::drawBody(cairo_t* cr, int drum) const {
   cairo_line_to(cr, 1010, 117.5);
   cairo_stroke(cr);
 
-  // Section labels.
-  text(cr, "GATE", 30, 315, 11, 0, skin.legendDim.r, skin.legendDim.g,
-       skin.legendDim.b);
-  text(cr, "ADVANCED", 30, 455, 11, 0, skin.legendDim.r, skin.legendDim.g,
-       skin.legendDim.b);
-  text(cr, "MULTIBAND", 30, 575, 11, 0, skin.legendDim.r, skin.legendDim.g,
+  // Explain why there are only three knobs: the profile automates the rest.
+  text(cr, "PROFILE AUTOMATES REDUCTION / DECAY / ATTACK / SATURATION",
+       kPanelWidth * 0.5, 566, 10, 1, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
 
   // Footer.
@@ -608,7 +594,7 @@ void Panel::drawScope(cairo_t* cr, const Shared& shared,
                       const PanelState& state) const {
   const int drum = static_cast<int>(shared.get(P_DRUM) + 0.5);
   const Skin skin = skinFor(drum);
-  const double x = 170, y = 136, w = 700, h = 130;
+  const double x = 170, y = 136, w = 700, h = 180;
 
   roundRect(cr, x, y, w, h, 4);
   cairo_set_source_rgba(cr, 0.025, 0.027, 0.030, 0.98);
@@ -840,7 +826,8 @@ void Panel::drawGhost(cairo_t* cr, const Widget& w, bool on, int drum) const {
     cairo_fill(cr);
   }
 
-  text(cr, "GHOST", cx, w.y + w.h + 13, 9, 1, on ? skin.ghostOn.r : skin.legendDim.r,
+  text(cr, w.label, cx, w.y + w.h + 13, 9, 1,
+       on ? skin.ghostOn.r : skin.legendDim.r,
        on ? skin.ghostOn.g : skin.legendDim.g,
        on ? skin.ghostOn.b : skin.legendDim.b);
 }
