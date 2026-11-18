@@ -1,11 +1,11 @@
 # Bleed Out
 
-**Version 0.1.0-alpha.1** · GPL-3.0-or-later
+**Version 0.1.0-alpha.2** · GPL-3.0-or-later
 
 > **Public alpha.** The de-bleed gate is usable and measured; factory presets
 > and final tuning are planned after feedback. Expect changes.
 >
-> [Download v0.1.0-alpha.1](https://github.com/tylorismusic-commits/bleed-out/releases/tag/v0.1.0-alpha.1)
+> [Download v0.1.0-alpha.2](https://github.com/tylorismusic-commits/bleed-out/releases/tag/v0.1.0-alpha.2)
 
 A multiband de-bleed gate for drums, built in the same visual language as Comp
 Suite and the rest of the Suite series. It removes hi-hat and cymbal bleed while
@@ -43,12 +43,17 @@ drum gate should not need a second page of knobs to sound good.
 
 ### How DeBleed works
 
-The high band (cymbals, hi-hat, snare wires) is gated **from the drum body**,
+The high band (cymbals, hi-hat, snare wires) is gated **from the target hit**,
 not from the cymbal wash itself. This is the same idea as the Nolly/FabFilter
-Saturn trick and the Black Salt Audio Silencer de-bleeding circuit: the low/mid
-body detector opens the high band for the attack, then the high band closes
-again **even while the body is still ringing**. DeBleed sets how far down that
-high band goes.
+Saturn trick and the Black Salt Audio Silencer de-bleeding circuit: the same
+detector that opens the main gate opens the high band for the attack, then the
+high band closes again **even while the body is still ringing**. DeBleed sets
+how far down that high band goes.
+
+Anything that does not open the main gate cannot open the high band either.
+That matters on a full-kit sample: a snare body a few dB below the kick
+threshold used to open the high band on its own, so its crack came through as a
+short blip while the visible gate stayed closed. Now closed means closed.
 
 The de-bleed sidechain is one-shot, with its own short hold/release (4/16 ms on
 Snare), so it does not ride the main gate's long tail. At DeBleed 100 the high
@@ -119,6 +124,9 @@ cmake --install build
 ```
 
 ## Status
+
+**0.1.0-alpha.2:** the de-bleed high band now triggers from the main gate edge,
+so sub-threshold snare/hat bleed can no longer open it while the gate is closed.
 
 0.1.0 is a working prototype: three-knob de-bleed gate, drum profiles, ghost-note
 mode, MIDI note/CC control, CLAP and LV2.
