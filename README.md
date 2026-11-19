@@ -94,8 +94,9 @@ note keeps its body and its top end instead of sounding dull.
   required by metal law.
 - **Ghost amount** is a normal automatable parameter and the knob next to the
   icon.
-- **MIDI CC (default 74)** sets the ghost amount.
-- **MIDI note-on (default 38)** sets the ghost amount from velocity and opens a
+- **MIDI CC (default 74)** sets the ghost velocity scale without moving the
+  Ghost knob.
+- **MIDI note-on (default 38)** scales the ghost window from velocity and opens a
   short ghost window, so a MIDI performance can add ghost notes.
 - The scope shows a small ghost when the ghost window is open.
 

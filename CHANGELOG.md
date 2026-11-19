@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-alpha.3 — 2026-11-18
+
+- MIDI ghost note/CC no longer writes the Ghost amount parameter, so the knob
+  stays where the user set it.
+- MIDI velocity now scales the ghost window separately; the Ghost knob remains
+  the amount control.
+- Added a regression test for velocity-scaled ghost windows.
+
 ## 0.1.0-alpha.1 — public alpha — 2026-11-17
 
 - First working Bleed Out prototype: CLAP + LV2, 1040×640 Comp Suite-style

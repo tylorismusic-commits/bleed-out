@@ -465,8 +465,11 @@ void applyEvents(Plugin* s, const clap_input_events_t* in) {
     } else if (hdr->type == CLAP_EVENT_NOTE_ON) {
       const auto* n = reinterpret_cast<const clap_event_note_t*>(hdr);
       const int ghostNote = static_cast<int>(s->shared.get(P_GHOST_NOTE) + 0.5);
-      if (n->key == ghostNote && std::isfinite(n->velocity) && n->velocity > 0.0) {
-        s->shared.set(P_GHOST, n->velocity * 100.0);
+      if (n->key == ghostNote && std::isfinite(n->velocity) &&
+          n->velocity > 0.0) {
+        s->shared.midiGhostVelocity.store(
+            std::clamp(static_cast<float>(n->velocity), 0.0f, 1.0f),
+            std::memory_order_relaxed);
         s->shared.midiGhostTrigger.fetch_add(1, std::memory_order_relaxed);
       }
     } else if (hdr->type == CLAP_EVENT_MIDI) {
@@ -475,13 +478,17 @@ void applyEvents(Plugin* s, const clap_input_events_t* in) {
       if (status == 0x90 && m->data[2] > 0) {
         const int ghostNote = static_cast<int>(s->shared.get(P_GHOST_NOTE) + 0.5);
         if (m->data[1] == ghostNote) {
-          s->shared.set(P_GHOST, (m->data[2] / 127.0) * 100.0);
+          s->shared.midiGhostVelocity.store(
+              static_cast<float>(m->data[2]) / 127.0f,
+              std::memory_order_relaxed);
           s->shared.midiGhostTrigger.fetch_add(1, std::memory_order_relaxed);
         }
       } else if (status == 0xb0) {
         const int ghostCc = static_cast<int>(s->shared.get(P_GHOST_CC) + 0.5);
         if (m->data[1] == ghostCc) {
-          s->shared.set(P_GHOST, (m->data[2] / 127.0) * 100.0);
+          s->shared.midiGhostVelocity.store(
+              static_cast<float>(m->data[2]) / 127.0f,
+              std::memory_order_relaxed);
         }
       }
     }

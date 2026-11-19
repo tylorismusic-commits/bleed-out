@@ -86,6 +86,7 @@ struct Controls {
   int ghostNote = 38;
   int ghostCc = 74;
   int ghostTrigger = 0;
+  float ghostVelocity = 1.0f;
 };
 
 struct Meters {
