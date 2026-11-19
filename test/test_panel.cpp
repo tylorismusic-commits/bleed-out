@@ -5,6 +5,8 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <filesystem>
 #include <string>
 
 #include "params.hpp"
@@ -98,6 +100,76 @@ int main() {
     check(parseParamValue(shared, P_DRUM, "Snare", &v) &&
               std::fabs(v - 1.0) < 1e-9,
           "typed drum accepts Snare");
+  }
+
+
+  {
+    namespace fs = std::filesystem;
+    const fs::path root = fs::temp_directory_path() / "bleed-out-preset-test";
+    fs::remove_all(root);
+    fs::create_directories(root / "config");
+    fs::create_directories(root / "home");
+    const std::string oldXdg =
+        std::getenv("XDG_CONFIG_HOME") ? std::getenv("XDG_CONFIG_HOME") : "";
+    const std::string oldHome =
+        std::getenv("HOME") ? std::getenv("HOME") : "";
+    setenv("XDG_CONFIG_HOME", (root / "config").string().c_str(), 1);
+    setenv("HOME", (root / "home").string().c_str(), 1);
+
+    Shared userShared;
+    PanelState userState;
+    Panel userPanel;
+    userShared.set(P_DEBLEED, 0.71);
+    const double saved = userShared.get(P_DEBLEED);
+    userPanel.handlePresetClick(userShared, userState, 72 + 165, 32);
+    userPanel.handlePresetClick(userShared, userState, 100, 450);
+    check(userState.savePreset, "SAVE opens the name field");
+    for (char c : std::string("My Gate")) {
+      userPanel.textKey(userShared, userState, 0, c);
+    }
+    userPanel.textKey(userShared, userState, Panel::kTextEnter, 0);
+    check(userState.userPresets.size() == 1, "user preset is written");
+    check(userState.presetIndex == kPresetCount, "saved preset becomes active");
+    userShared.set(P_DEBLEED, 0.1);
+    userPanel.applyPreset(userShared, userState, userState.presetIndex);
+    check(std::fabs(userShared.get(P_DEBLEED) - saved) < 1e-9,
+          "user preset recalls every parameter");
+
+    userPanel.handlePresetClick(userShared, userState, 72 + 165, 32);
+    userPanel.handlePresetClick(userShared, userState, 100, 480);
+    for (char c : std::string("Renamed")) {
+      userPanel.textKey(userShared, userState, 0, c);
+    }
+    userPanel.textKey(userShared, userState, Panel::kTextEnter, 0);
+    check(userState.userPresets.size() == 1 &&
+              userState.userPresets[0].name == "Renamed",
+          "user preset renames");
+
+    userPanel.handlePresetClick(userShared, userState, 72 + 165, 32);
+    userPanel.handlePresetClick(userShared, userState, 180, 450);
+    check(userState.userPresets.size() == 2, "DUPLICATE creates a preset");
+
+    userPanel.handlePresetClick(userShared, userState, 72 + 165, 32);
+    userPanel.handlePresetClick(userShared, userState, 250, 480);
+    const fs::path exported = userPresetExportDir() /
+                              (std::string("Renamed copy") +
+                               kUserPresetExt);
+    check(fs::exists(exported), "EXPORT writes a preset file");
+
+    userPanel.handlePresetClick(userShared, userState, 72 + 165, 32);
+    userPanel.handlePresetClick(userShared, userState, 180, 480);
+    userPanel.handlePresetClick(userShared, userState, 180, 480);
+    check(userState.userPresets.size() == 1, "DELETE removes the preset");
+    check(userPanel.importDroppedFile(userShared, userState,
+                                      exported.string()),
+          "IMPORT accepts a dropped preset file");
+    check(userState.userPresets.size() == 2, "import adds a preset");
+
+    if (!oldXdg.empty()) setenv("XDG_CONFIG_HOME", oldXdg.c_str(), 1);
+    else unsetenv("XDG_CONFIG_HOME");
+    if (!oldHome.empty()) setenv("HOME", oldHome.c_str(), 1);
+    else unsetenv("HOME");
+    fs::remove_all(root);
   }
 
   cairo_destroy(cr);

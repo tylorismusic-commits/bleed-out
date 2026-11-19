@@ -130,7 +130,7 @@ cmake --install build
 so sub-threshold snare/hat bleed can no longer open it while the gate is closed.
 
 0.1.0 is a working prototype: three-knob de-bleed gate, drum profiles, ghost-note
-mode, MIDI note/CC control, CLAP and LV2.
+mode, MIDI note/CC control, CLAP and LV2, plus a factory and user preset bank.
 
 Known prototype limits:
 
