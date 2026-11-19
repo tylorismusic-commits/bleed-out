@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.4 — 2026-11-19
+
+- User preset bank: save, rename, duplicate, delete, export and drag-drop
+  import, alongside the factory presets.
+- Preset files live in `~/.config/BleedOut/presets` and export to
+  `~/Documents/Bleed Out Presets`.
+
 ## 0.1.0-alpha.3 — 2026-11-18
 
 - MIDI ghost note/CC no longer writes the Ghost amount parameter, so the knob

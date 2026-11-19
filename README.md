@@ -1,11 +1,11 @@
 # Bleed Out
 
-**Version 0.1.0-alpha.2** · GPL-3.0-or-later
+**Version 0.1.0-alpha.4** · GPL-3.0-or-later
 
 > **Public alpha.** The de-bleed gate is usable and measured; factory presets
 > and final tuning are planned after feedback. Expect changes.
 >
-> [Download v0.1.0-alpha.2](https://github.com/tylorismusic-commits/bleed-out/releases/tag/v0.1.0-alpha.2)
+> [Download v0.1.0-alpha.2](https://github.com/tylorismusic-commits/bleed-out/releases/tag/v0.1.0-alpha.4)
 
 A multiband de-bleed gate for drums, built in the same visual language as Comp
 Suite and the rest of the Suite series. It removes hi-hat and cymbal bleed while
